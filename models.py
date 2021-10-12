@@ -1,6 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from app import db, app
+from app import db
 
 
 class Category(db.Model):
@@ -9,7 +8,7 @@ class Category(db.Model):
     name = db.Column(db.String(255), nullable=False)
     slug = db.Column(db.String(255), nullable=False)
     created_on = db.Column(db.DateTime(), default=datetime.utcnow)
-    posts = db.relationship('Post', backref='category')
+    posts = db.relationship('Post', backref='category', cascade='all,delete-orphan')
 
     def __repr__(self):
         return "<{}:{}>".format(id, self.name)
@@ -47,6 +46,13 @@ class Tag(db.Model):
         return "<{}:{}>".format(id, self.name)
 
 
-if __name__ == '__main__':
-    db.create_all()
-    app.run()
+class Feedback(db.Model):
+    __tablename__ = 'feedbacks'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(1000), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    message = db.Column(db.Text(), nullable=False)
+    created_on = db.Column(db.DateTime(), default=datetime.utcnow)
+
+    def __repr__(self):
+        return "<{}:{}>".format(self.id, self.name)

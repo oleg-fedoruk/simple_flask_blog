@@ -1,27 +1,7 @@
-import datetime
-from flask import Flask, redirect, url_for, render_template, flash, make_response, request, session
-from flask_sqlalchemy import SQLAlchemy
+from app import app, db
+from flask import redirect, url_for, render_template, flash, make_response, request, session
 from forms import ContactForm
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'a really really really really long secret key'
-app.permanent_session_lifetime = datetime.timedelta(days=365)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://oleg:oleg@localhost/test'
-# app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=365)
-
-db = SQLAlchemy(app)
-# формат URI для баз данных:  dialect+driver://username:password@host:port/database
-# URL базы данных для MySQL с использованием драйвера PyMysql
-'mysql+pymysql://root:pass@localhost/my_db'
-
-# URL базы данных для PostgreSQL с использованием psycopg2
-'postgresql+psycopg2://root:pass@localhost/my_db'
-
-# URL базы данных для MS-SQL с использованием драйвера pyodbc
-'mssql+pyodbc://root:pass@localhost/my_db'
-
-# URL базы данных для Oracle с использованием драйвера cx_Oracle
-'oracle+cx_oracle://root:pass@localhost/my_db'
+from models import Feedback
 
 
 @app.route('/')
@@ -37,6 +17,9 @@ def contact():
         email = form.email.data
         message = form.message.data
         # здесь логика базы данных
+        feedback = Feedback(name=name, email=email, message=message)
+        db.session.add(feedback)
+        db.session.commit()
         flash("Message Received", "success")
         return redirect(url_for('contact'))
 
@@ -93,5 +76,4 @@ def delete_visits():
 
 
 if __name__ == '__main__':
-    db.create_all()
-    app.run()
+    ...
