@@ -1,13 +1,43 @@
+from flask_login import login_required, login_user, logout_user, current_user
 from app import app, db
 from flask import redirect, url_for, render_template, flash, make_response, request, session
 from app.mail_sender import send_mail
-from forms import ContactForm
-from models import Feedback
+from forms import ContactForm, LoginForm
+from models import Feedback, User
 
 
 @app.route('/')
 def hello_world():
     return 'Hello World!'
+
+
+@app.route('/books/<genre>/')
+def books(genre):
+    return "All Books in {} category".format(genre)
+
+
+@app.route('/login/', methods=['post', 'get'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('admin'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = db.session.query(User).filter(User.username == form.username.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember.data)
+            return redirect(url_for('admin'))
+
+        flash("Invalid username/password", 'error')
+        return redirect(url_for('login'))
+    return render_template('login.html', form=form)
+
+
+@app.route('/logout/')
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.")
+    return redirect(url_for('login'))
 
 
 @app.route('/contact/', methods=['GET', 'POST'])
@@ -43,12 +73,12 @@ def cookie():
     return res
 
 
-@app.route('/article/', methods=['POST',  'GET'])
+@app.route('/article/', methods=['POST', 'GET'])
 def article():
     if request.method == 'POST':
         print(request.form)
         res = make_response("")
-        res.set_cookie("font", request.form.get('font'), 60*60*24*15)
+        res.set_cookie("font", request.form.get('font'), 60 * 60 * 24 * 15)
         res.headers['location'] = url_for('article')
         return res, 302
 
@@ -64,6 +94,12 @@ def visits():
     return "Total visits: {}".format(session.get('visits'))
 
 
+@app.route('/delete-visits/')
+def delete_visits():
+    session.pop('visits', None)  # удаление данных о посещениях
+    return 'Visits deleted'
+
+
 @app.route('/session/')
 def updating_session():
     res = str(session.items())
@@ -76,10 +112,10 @@ def updating_session():
     return res
 
 
-@app.route('/delete-visits/')
-def delete_visits():
-    session.pop('visits', None)  # удаление данных о посещениях
-    return 'Visits deleted'
+@app.route('/admin/')
+@login_required
+def admin():
+    return render_template('admin.html')
 
 
 if __name__ == '__main__':
