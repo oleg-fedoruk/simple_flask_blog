@@ -1,11 +1,12 @@
 from app import app, db
 from flask import redirect, url_for, render_template, flash, make_response, request, session
+from app.mail_sender import send_mail
 from forms import ContactForm
 from models import Feedback
 
 
 @app.route('/')
-def hello_world():  # put application's code here
+def hello_world():
     return 'Hello World!'
 
 
@@ -16,10 +17,16 @@ def contact():
         name = form.name.data
         email = form.email.data
         message = form.message.data
+
         # здесь логика базы данных
         feedback = Feedback(name=name, email=email, message=message)
         db.session.add(feedback)
         db.session.commit()
+
+        # асинхронно отправляем письмо о пришедшем фидбэке
+        send_mail(subject="Feedback", recipient=[app.config['MAIL_USERNAME']],
+                  template='feedback.html', name=name, email=email)
+
         flash("Message Received", "success")
         return redirect(url_for('contact'))
 
