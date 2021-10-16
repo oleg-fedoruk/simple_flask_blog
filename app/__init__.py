@@ -1,6 +1,7 @@
 import datetime
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a really really really really long secret key'
@@ -21,4 +22,5 @@ db = SQLAlchemy(app)
 
 # URL базы данных для Oracle с использованием драйвера cx_Oracle
 'oracle+cx_oracle://root:pass@localhost/my_db'
+migrate = Migrate(app,  db)
 from .veiws import *

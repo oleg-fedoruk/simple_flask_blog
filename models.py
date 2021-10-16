@@ -56,3 +56,11 @@ class Feedback(db.Model):
 
     def __repr__(self):
         return "<{}:{}>".format(self.id, self.name)
+
+
+class Employee(db.Model):
+    __tablename__ = 'employees'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    designation = db.Column(db.String(255), nullable=False)
+    doj = db.Column(db.Date(), nullable=False)
