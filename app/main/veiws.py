@@ -1,51 +1,52 @@
 from flask_login import login_required, login_user, logout_user, current_user
 from app import app, db
+from . import main
 from flask import redirect, url_for, render_template, flash, make_response, request, session
 from app.utils import send_mail
-from forms import ContactForm, LoginForm
-from models import Feedback, User
+from .forms import ContactForm, LoginForm
+from app.models import Feedback, User
 
 
-@app.route('/')
+@main.route('/')
 def hello_world():
     return 'Hello World!'
 
 
-@app.route('/user/<int:user_id>/')
+@main.route('/user/<int:user_id>/')
 def user_profile(user_id):
     return "Profile page of user #{}".format(user_id)
 
 
-@app.route('/books/<genre>/')
+@main.route('/books/<genre>/')
 def books(genre):
     return "All Books in {} category".format(genre)
 
 
-@app.route('/login/', methods=['post', 'get'])
+@main.route('/login/', methods=['post', 'get'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('admin'))
+        return redirect(url_for('.admin'))
     form = LoginForm()
     if form.validate_on_submit():
         user = db.session.query(User).filter(User.username == form.username.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
-            return redirect(url_for('admin'))
+            return redirect(url_for('.admin'))
 
         flash("Invalid username/password", 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('.login'))
     return render_template('login.html', form=form)
 
 
-@app.route('/logout/')
+@main.route('/logout/')
 @login_required
 def logout():
     logout_user()
     flash("You have been logged out.")
-    return redirect(url_for('login'))
+    return redirect(url_for('.login'))
 
 
-@app.route('/contact/', methods=['GET', 'POST'])
+@main.route('/contact/', methods=['GET', 'POST'])
 def contact():
     form = ContactForm()
     if form.validate_on_submit():
@@ -63,12 +64,12 @@ def contact():
                   template='mail/feedback.html', name=name, email=email)
 
         flash("Message Received", "success")
-        return redirect(url_for('contact'))
+        return redirect(url_for('.contact'))
 
     return render_template('contact.html', form=form)
 
 
-@app.route('/cookie/')
+@main.route('/cookie/')
 def cookie():
     if not request.cookies.get('foo'):
         res = make_response("Setting a cookie")
@@ -78,18 +79,18 @@ def cookie():
     return res
 
 
-@app.route('/article/', methods=['POST', 'GET'])
+@main.route('/article/', methods=['POST', 'GET'])
 def article():
     if request.method == 'POST':
         res = make_response("")
         res.set_cookie("font", request.form.get('font'), 60 * 60 * 24 * 15)
-        res.headers['location'] = url_for('article')
+        res.headers['location'] = url_for('.article')
         return res, 302
 
     return render_template('article.html')
 
 
-@app.route('/visits-counter/')
+@main.route('/visits-counter/')
 def visits():
     if 'visits' in session:
         session['visits'] = session.get('visits') + 1  # чтение и обновление данных сессии
@@ -98,13 +99,13 @@ def visits():
     return "Total visits: {}".format(session.get('visits'))
 
 
-@app.route('/delete-visits/')
+@main.route('/delete-visits/')
 def delete_visits():
     session.pop('visits', None)  # удаление данных о посещениях
     return 'Visits deleted'
 
 
-@app.route('/session/')
+@main.route('/session/')
 def updating_session():
     res = str(session.items())
     cart_item = {'pineapples': '10', 'apples': '20', 'mangoes': '30'}
@@ -116,7 +117,7 @@ def updating_session():
     return res
 
 
-@app.route('/admin/')
+@main.route('/admin/')
 @login_required
 def admin():
     return render_template('admin.html')

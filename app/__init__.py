@@ -17,5 +17,9 @@ migrate = Migrate(app,  db)
 mail = Mail(app)
 # подключаем аутентификацию пользователей
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-from .veiws import *
+login_manager.login_view = 'main.login'
+
+# регистрация blueprints
+from .main import main as main_blueprint
+app.register_blueprint(main_blueprint)
+
