@@ -1,7 +1,7 @@
 from flask_login import login_required, login_user, logout_user, current_user
 from app import app, db
 from flask import redirect, url_for, render_template, flash, make_response, request, session
-from app.mail_sender import send_mail
+from app.utils import send_mail
 from forms import ContactForm, LoginForm
 from models import Feedback, User
 
@@ -9,6 +9,11 @@ from models import Feedback, User
 @app.route('/')
 def hello_world():
     return 'Hello World!'
+
+
+@app.route('/user/<int:user_id>/')
+def user_profile(user_id):
+    return "Profile page of user #{}".format(user_id)
 
 
 @app.route('/books/<genre>/')
@@ -54,8 +59,8 @@ def contact():
         db.session.commit()
 
         # асинхронно отправляем письмо о пришедшем фидбэке
-        send_mail(subject="Feedback", recipient=[app.config['MAIL_USERNAME']],
-                  template='feedback.html', name=name, email=email)
+        send_mail(subject="Feedback", recipient=[app.config['MAIL_DEFAULT_SENDER']],
+                  template='mail/feedback.html', name=name, email=email)
 
         flash("Message Received", "success")
         return redirect(url_for('contact'))
@@ -76,7 +81,6 @@ def cookie():
 @app.route('/article/', methods=['POST', 'GET'])
 def article():
     if request.method == 'POST':
-        print(request.form)
         res = make_response("")
         res.set_cookie("font", request.form.get('font'), 60 * 60 * 24 * 15)
         res.headers['location'] = url_for('article')
