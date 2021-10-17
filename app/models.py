@@ -13,7 +13,7 @@ class Category(db.Model):
     posts = db.relationship('Post', backref='category', cascade='all,delete-orphan')
 
     def __repr__(self):
-        return "<{}:{}>".format(id, self.name)
+        return f"<{self.id}:{self.name}>"
 
 
 post_tags = db.Table('post_tags',
@@ -33,7 +33,7 @@ class Post(db.Model):
     category_id = db.Column(db.Integer(), db.ForeignKey('categories.id'))
 
     def __repr__(self):
-        return "<{}:{}>".format(self.id, self.title[:10])
+        return f"<{self.id}:{self.title[:10]}>"
 
 
 class Tag(db.Model):
@@ -45,7 +45,7 @@ class Tag(db.Model):
     posts = db.relationship('Post', secondary=post_tags, backref='tags')
 
     def __repr__(self):
-        return "<{}:{}>".format(id, self.name)
+        return f"<{self.id}:{self.name}>"
 
 
 class Feedback(db.Model):
@@ -57,7 +57,7 @@ class Feedback(db.Model):
     created_on = db.Column(db.DateTime(), default=datetime.utcnow)
 
     def __repr__(self):
-        return "<{}:{}>".format(self.id, self.name)
+        return f"<{self.id}:{self.name}>"
 
 
 class Employee(db.Model):
@@ -84,11 +84,10 @@ class User(db.Model, UserMixin):
     updated_on = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
-        return "<{}:{}>".format(self.id, self.username)
+        return f"<{self.id}:{self.username}>"
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-

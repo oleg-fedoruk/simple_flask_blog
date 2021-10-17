@@ -23,3 +23,31 @@ login_manager.login_view = 'main.login'
 from .main import main as main_blueprint
 app.register_blueprint(main_blueprint)
 
+
+# настройки приложения с вариантом фабрики приложения
+# db = SQLAlchemy()
+# mail = Mail()
+# migrate = Migrate()
+# login_manager = LoginManager()
+# login_manager.login_view = 'main.login'
+
+
+# Фабрика приложения
+# def create_app(config):
+#     app = Flask(__name__)
+#     app.config.from_object(config)
+#
+#     db.init_app(app)
+#     mail.init_app(app)
+#     migrate.init_app(app, db)
+#     login_manager.init_app(app)
+#
+#     from .main import main as main_blueprint
+#     app.register_blueprint(main_blueprint)
+#
+#     return app
+
+# при использовании фабрик приложения пропадает доступ к экземпляру
+# приложения в эскизе во время импорта.
+# Для получения доступа к экземплярам в эскизе
+# нужно использовать прокси current_app из пакета flask
